@@ -1,5 +1,5 @@
 #Longitudinal_networks
-#This code is meant for people that have a large database and want to apply the same technique to get longitudinal networks
+#This code is meant for people who have a large database and want to apply the same technique to get longitudinal networks
 # We will specify that if they want to use other regions/atlas, they need to change the selected regions below and the parcellated image for the back projection. 
 
 #Importing libraries
@@ -24,8 +24,8 @@ from nilearn.plotting import plot_stat_map, show
 
 
 ### Defining the input matrix for ICA
-# A csv with one column with the subject ID and the remainings with the volume of brain regions
-df = pd.read_csv('/data/elisa/SCRIPT/2019-07-23_02-38-42_df_completed.csv') #cvs wiith participants as rows, brain regional volumes as cols
+# A csv with one column with the subject ID and the remaining with the volume of brain regions
+df = pd.read_csv('/data/elisa/SCRIPT/2019-07-23_02-38-42_df_completed.csv') # TO BE PROVIDED. cvs with participants as rows, brain regional volumes as cols
 
 #subsetting trials to be included in the training cohort (could be substituted for a 70-30 )
 dataFrame_ascend = df[df['session_label'].str.contains('ASCEND')] #subsetting trials
@@ -186,7 +186,7 @@ col.columns = ['REGION_Label']#to be consistent and be able to merge later
 col['REGION_Label'] = col['REGION_Label'].astype(str).str.replace('Vol_prob_', '') #to match the parcellation file where I don't have them
 
 
-region_numb = pd.read_csv('/data/elisa/Parcellated_regions_ica_modified.csv') 
+region_numb = pd.read_csv('/data/elisa/Parcellated_regions_ica_modified.csv') #TO BE PROVIDED
 region_numb['REGION_Label'] = region_numb['REGION_Label'].astype(str).str.replace(' ', '_')
 region_numb.head()
 
@@ -230,7 +230,7 @@ print (loading_.shape)
 print (loading_)
 
 
-#Visualize components identified from ICA from training group
+#Visualize components identified from ICA from the training group
 # Normalize estimated components, for thresholding to make sense
 components_masked -= components_masked.mean(axis=0)
 components_masked /= components_masked.std(axis=0)
@@ -283,8 +283,8 @@ pd.DataFrame.to_csv(data_wregion_names, '/data/elisa/RESULTS/Longitudinal_projec
 
 #Visualisation 
 
-path_imParc = '/data/elisa/RESULTS/ASCEND_results/Mask/FinalParcellated_MajorityVoting_Input_ToExtractRegions.nii.gz' #importing parcellated map
-temp = nb.load('/data/elisa/TEMPLATE_TRY/SingleSubjectTemplateInterpolated2/template_template0.nii.gz') #importing template in the same space of the parcellated map
+path_imParc = '/data/elisa/RESULTS/ASCEND_results/Mask/FinalParcellated_MajorityVoting_Input_ToExtractRegions.nii.gz' #TO BE PROVIDED importing parcellated map
+temp = nb.load('/data/elisa/TEMPLATE_TRY/SingleSubjectTemplateInterpolated2/template_template0.nii.gz') # TO BE PROVIDED importing template in the same space of the parcellated map
 parcel_image = nb.load(path_imParc)
 parcel_image_vox = parcel_image.get_fdata().copy()
 parc_as_int = parcel_image.get_fdata().astype(np.int32)
@@ -380,7 +380,7 @@ for f in thres_compoents:
     
     
 #Define external cohort - previous variables have been overwritten from here on
-df = pd.read_csv('/data/elisa/SCRIPT/2019-07-23_02-38-42_df_completed.csv') #reloading the same cvs that I loaded for the traiing cohort
+df = pd.read_csv('/data/elisa/SCRIPT/2019-07-23_02-38-42_df_completed.csv') #TO BE PROVIDED. reloading the same cvs that I loaded for the traiing cohort
 dataFrame_opera1 = df[df['session_label'].str.contains('OPERA1')] #keep just participants from OPERA1
 dataFrame_opera2 = df[df['session_label'].str.contains('OPERA2')] #keep just participants from OPERA2
 dataFrame_oratorio = df[df['session_label'].str.contains('ORATORIO')] #keep just participants from ORATORIO - this approach worked for my study because I had to subset based on positive and negative trials. For other cohorts, as suggested at the beginning, could be best to split the 70% of the cohort to training and the remaining to the external
@@ -392,7 +392,7 @@ dataFrameOut = dataFrameOut.drop_duplicates(subset= "session_label")
 
 
 #As for the training cohort, subsetting the GM regions
-#subsetting just regions of interest and participants ID.
+#subsetting just regions of interest and participants' ID.
 
 df= dataFrameOut[[ 'session_label', 
                   'Vol_prob_Brain_Stem',
