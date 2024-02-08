@@ -4,6 +4,7 @@
 
 #Importing libraries
 
+import argparse
 import os, glob
 import matplotlib.pyplot as plt
 import numpy as np
@@ -19,9 +20,13 @@ from nilearn import image
 from nilearn.plotting import plot_stat_map, show
 
 
+parser = argparse.ArgumentParser(description='ICA on longitudinal data')
+parser.add_argument('--input', type=str, help='Input CSV with the participants and regional volumes')
+args = parser.parse_args()
+
 ### Defining the input matrix for ICA
 # A csv with one column with the subject ID and the remaining with the volume of brain regions
-df = pd.read_csv('/data/elisa/SCRIPT/2019-07-23_02-38-42_df_completed.csv') # TO BE PROVIDED. cvs with participants as rows, brain regional volumes as cols
+df = pd.read_csv(args.input) # TO BE PROVIDED. cvs with participants as rows, brain regional volumes as cols
 
 #subsetting trials to be included in the training cohort (could be substituted for a 70-30 )
 dataFrame_ascend = df[df['session_label'].str.contains('ASCEND')] #subsetting trials
