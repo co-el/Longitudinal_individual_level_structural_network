@@ -6,18 +6,17 @@
 
 import argparse
 import os, glob
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pickle
-from matplotlib import image
 import nibabel as nb
 from sklearn.decomposition import FastICA
-import math 
-import random
 np.random.RandomState(0)
 from nilearn import image
-from nilearn.plotting import plot_stat_map, show
+from nilearn.plotting import (
+    plot_stat_map,
+    show
+)
 
 
 parser = argparse.ArgumentParser(description='ICA on longitudinal data')
