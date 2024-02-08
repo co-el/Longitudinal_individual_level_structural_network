@@ -19,10 +19,6 @@ from nilearn import image
 from nilearn.plotting import plot_stat_map, show
 
 
-
-%pylab inline
-
-
 ### Defining the input matrix for ICA
 # A csv with one column with the subject ID and the remaining with the volume of brain regions
 df = pd.read_csv('/data/elisa/SCRIPT/2019-07-23_02-38-42_df_completed.csv') # TO BE PROVIDED. cvs with participants as rows, brain regional volumes as cols
