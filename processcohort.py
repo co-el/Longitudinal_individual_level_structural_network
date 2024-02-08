@@ -1,7 +1,17 @@
-def process_cohort(dataFrameOut):
-    #Subsetting regional volumes to include GM ones
+#Libraries
+from sklearn.linear_model import Lasso
+from sklearn.model_selection import train_test_split
+import pandas as pd
+import numpy as np
+from sklearn.metrics import r2_score
+from sklearn.metrics import mean_squared_error
+from math import sqrt
+import pickle
 
-    df= dataFrameOut[[ 'session_label', 
+
+def process_cohort(dataFrameOut, region_numb,template, parcellated_map):
+    #Subsetting regional volumes to include GM ones
+    GM_regions = [ 'session_label', 
                     'Vol_prob_Brain_Stem',
                     'Vol_prob_Brain_Stem_and_Pons', 
                     'Vol_prob_Cerebellar_Vermal_Lobules_I-V',
@@ -123,7 +133,8 @@ def process_cohort(dataFrameOut):
                     'Vol_prob_Right_AIns_anterior_insula',
                     'Vol_prob_Left_AIns_anterior_insula',
                     'Vol_prob_Left_LiG_lingual_gyrus',
-                    'Vol_prob_Right_LiG_lingual_gyrus' ]]  #selecting the GM regions to keep from the atlas
+                    'Vol_prob_Right_LiG_lingual_gyrus' ]
+    df= dataFrameOut[GM_regions]  #selecting the GM regions to keep from the atlas
 
 
     print (df)
@@ -328,3 +339,164 @@ def process_cohort(dataFrameOut):
         name = 'thresholded_masked_ICA_GM_' + no_compo + '.png'
         print (name)
         a.savefig (os.path.join (root, name))
+
+
+    #Lasso 
+    
+    validation_df =  validation_df[GM_regions] 
+    df1_validation = validation_df.dropna(axis= 0) #dropping NaN values
+    col_name = df1_validation.columns.tolist()
+    col = pd.DataFrame(col_name) #matrix with col names to be used later
+    col.columns = ['REGION_Label']#to be consistent and be able to merge later 
+    col['REGION_Label'] = col['REGION_Label'].astype(str).str.replace('Vol_prob_', '') #to match the parcellation file where I don't have them
+    print ("shape col", col.shape)
+
+    region_numb['REGION_Label'] = region_numb['REGION_Label'].astype(str).str.replace(' ', '_')
+    region_numb.head()
+
+    col = pd.merge (col, region_numb, on='REGION_Label')
+    print ("shape col", col.shape)
+
+    col_to_keep = col.REGION_Label.tolist ()
+
+
+    df1_validation.columns = df1_validation.columns.str.replace("Vol_prob_", "")
+    col_to_keep.append ('session_label')
+    df1_validation_subj = df1_validation[df1_validation.columns.intersection(col_to_keep)] 
+    df1_validation = df1_validation.iloc[:, 1:]
+    print (df1_validation.head())  #Remove the ID column from the dataframe to create the final input to be used to run ICA
+    print (shape(df1_validation))
+    pd.DataFrame.to_csv(df1_validation_subj, '/data/elisa/RESULTS/Longitudinal_project/Dec2023/replication_external_cohort.csv')
+
+
+    list_disc = list(df_ica.columns)
+    list_rep = list(df1_validation.columns)
+    print(shape(df1_validation))
+    print (len(list_disc), len(list_rep))
+
+    #Validation method  for each component
+    ##Here I am creating pickles, applying and validating the model
+
+    #Defining list of ica components to go through
+    list_of_components = ['v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13', 'v14','v15', 'v16', 'v17', 'v88', 'v19', 'v20'] #CAPISCI XK V18 non andato
+    
+    X= df_ica_subj #discovery cohort - reports subj id, vol measure for each region
+    
+    for i in list_of_components: 
+        print ('Starting analysis for: ', i)
+        y = loading_[str(i)]
+        
+        #create training and testing 
+        X_train, X_test, y_train, y_test = train_test_split (X, y, test_size = 0.3, random_state= 0)
+        id_train = pd.DataFrame (X_train.iloc [:, 0:1])#saving id to dataframe
+        print (len(id_train))
+        X_train = X_train.iloc[:, 1:] #removing the id column
+        id_test = pd.DataFrame (X_test.iloc [:, 0:1])#saving id to dataframe
+        print (len(id_test))
+        X_test = X_test.iloc[:, 1:] #removing the id column
+        
+        #from sklearn.preprocessing.StandardScaler import class
+        lasso = Lasso (alpha = 0.0, fit_intercept=True, normalize= True  )
+        
+        #Fit model 
+    
+        lasso.fit(X_train, y_train)
+        model_name = "/data/elisa/RESULTS/Longitudinal_project/Dec2023/model_" + i + ".pkl" 
+        print('The model is saved as: ', model_name)
+        pickle.dump(lasso, open(model_name, 'wb'))
+        
+        #Create model score
+    
+        print (lasso.score(X_test, y_test))
+        print (lasso.score(X_train, y_train))
+        print (lasso.coef_)
+        
+        #Quality checking results for missing values
+    
+        cleanedList = [x for x in y if str(x) != 'NaN']
+        cleanedList = [x for x in y_test if str(x) != 'NaN']
+        cleanedList = [x for x in y_train if str(x) != 'NaN']
+        
+        
+        #predicting loading values in the training cohort
+    
+        pred_train_lasso= lasso.predict(X_train)
+        print ('The shape is: ', len(pred_train_lasso))
+        ##print ('The shape of the matrix for the predicted loadings in the train sample is: ', shape(pred_train_lasso))
+        pred_test_lasso= lasso.predict(X_test)
+        ##print ('The shape of the matrix for the predicted loadings in the test sample is: ', shape(pred_test_lasso))
+    
+        #evaluating the performance of LASSO with mean squared error and R2
+        print('The mean squared error for the ica loading vs. predicted loading in the train cohort is: ', np.sqrt(mean_squared_error(y_train,pred_train_lasso)))
+        print('The R2 score for the ica loading vs. predicted loading in the train cohort is: ', r2_score(y_train, pred_train_lasso))
+        print('The mean squared error for the ica loading vs. predicted loading in the test cohort is: ', np.sqrt(mean_squared_error(y_test,pred_test_lasso)))
+        print('The R2 score for the ica loading vs. predicted loading in the test cohort is: ', r2_score(y_test, pred_test_lasso))
+    
+        
+        #Saving loadings and predicted loading for stats analysis ICC
+    
+        ########
+        ######## Saving training data 
+        ########
+    
+        #print ('Original list is long: ', len(y_train))
+        #checking for NaN
+        #cleanedList = [x for x in y_train if str(x) != "NaN"] #checking for NaN
+        #print ('list without NaN is long: ', len(cleanedList))
+        col_load = str("ica_loading_" + i)
+        col_pred = str("predicted_loading_" + i)
+        subject = id_train.values.tolist()
+        print(id_train)
+        print(y_train)
+        print(pred_train_lasso)
+        save_train = pd.DataFrame(list(zip(subject, y_train, pred_train_lasso)),
+                   columns = ['session_label', col_load, col_pred])
+        print(save_train)
+        saving_name_train = "/data/elisa/RESULTS/Longitudinal_project/Dec2023/train_cohort_loading_predicted_" + i + ".csv"
+        save_train.to_csv(saving_name_train)
+        
+    
+        ########
+        ######## Saving testing data 
+        ########
+    
+        ##print ('Original list is long: ', len(y_test))
+        cleanedList = [x for x in y_test if str(x) != "NaN"] #checking for NaN
+        ##print ('list without NaN is long: ', len(cleanedList))
+        
+        subject_test = id_test.values.tolist()
+        print(id_test)
+        print(pred_test_lasso)
+        
+        save_test = pd.DataFrame(list(zip(subject_test, y_test, pred_test_lasso)), columns =['session_label', col_load, col_pred])
+        print (save_test)
+        saving_name_test = "/data/elisa/RESULTS/Longitudinal_project/Dec2023/test_cohort_loading_predicted_" + i + ".csv"
+        save_test.to_csv(saving_name_test)
+        
+        #############
+        ############# Replication cohort
+        #############
+    
+        #Predict loading for replication cohort and save it 
+    
+        replication_cohort = (df1_validation)
+        print (shape(replication_cohort))
+        predicted_loading_replication_cohort = lasso.predict(replication_cohort)
+        print(len(predicted_loading_replication_cohort))
+        print(predicted_loading_replication_cohort)
+        print (shape(predicted_loading_replication_cohort))
+        id_replication = df1_validation_subj.iloc[:, 0]
+        col_pred_id = "predicted_loading_" + i 
+        predicted_loading_replication_cohort_save = pd.DataFrame(list(zip(id_replication, predicted_loading_replication_cohort)),
+                   columns =['session_label', col_pred_id])
+        print (predicted_loading_replication_cohort_save)
+        save_name_pred = "/data/elisa/RESULTS/Longitudinal_project/Dec2023/replication_cohort_predicted_loading_" + i + ".csv"
+    
+        predicted_loading_replication_cohort_save.to_csv(save_name_pred)
+    
+    
+   
+    
+
+
+
