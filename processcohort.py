@@ -12,7 +12,7 @@ import pickle
 from constants import GM_REGIONS
 
 
-def process_cohort(dataFrameOut, region_numb,template, parcellated_map):
+def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, template: pathlib.Path, parcellated_map):
     #Subsetting regional volumes to include GM ones
     df= dataFrameOut[GM_REGIONS]  #selecting the GM regions to keep from the atlas
 
