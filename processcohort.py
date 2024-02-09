@@ -27,7 +27,6 @@ def process_cohort(dataFrameOut, region_numb,template, parcellated_map):
     subj_list = df1['session_label'].tolist()
     print (len(subj_list)) #subj_list which I'll need later
     subj_list_ = pd.DataFrame(subj_list)
-    shape (subj_list)
     col_name= df1.columns.tolist()
     col = pd.DataFrame(col_name) #matrix with col names to be used later
     col.columns = ['REGION_Label']#to be consistent and be able to merge later 
@@ -52,7 +51,6 @@ def process_cohort(dataFrameOut, region_numb,template, parcellated_map):
     df_ica_subj = df1[df1.columns.intersection(col_to_keep)] #I'll need this later on for the replication stage
     df_ica = df_ica_subj.iloc[:, 1:]
     print (df_ica.head())  #Remove the ID column from the dataframe to create the final input to be used to run ICA
-    print (shape(df_ica))
 
 
     print((df_ica_subj.shape))
@@ -359,11 +357,9 @@ def process_cohort(dataFrameOut, region_numb,template, parcellated_map):
         #Predict loading for replication cohort and save it 
     
         replication_cohort = (df1_validation)
-        print (shape(replication_cohort))
         predicted_loading_replication_cohort = lasso.predict(replication_cohort)
         print(len(predicted_loading_replication_cohort))
         print(predicted_loading_replication_cohort)
-        print (shape(predicted_loading_replication_cohort))
         id_replication = df1_validation_subj.iloc[:, 0]
         col_pred_id = "predicted_loading_" + i 
         predicted_loading_replication_cohort_save = pd.DataFrame(list(zip(id_replication, predicted_loading_replication_cohort)),
