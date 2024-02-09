@@ -129,8 +129,8 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
 
     #Visualisation 
 
-    path_imParc = '/data/elisa/RESULTS/ASCEND_results/Mask/FinalParcellated_MajorityVoting_Input_ToExtractRegions.nii.gz' #TO BE PROVIDED importing parcellated map
-    temp = nb.load('/data/elisa/TEMPLATE_TRY/SingleSubjectTemplateInterpolated2/template_template0.nii.gz') # TO BE PROVIDED importing template in the same space of the parcellated map
+    path_imParc = parcellated_map #TO BE PROVIDED importing parcellated map
+    temp = nb.load(template) # TO BE PROVIDED importing template in the same space of the parcellated map
     parcel_image = nb.load(path_imParc)
     parcel_image_vox = parcel_image.get_fdata().copy()
     parc_as_int = parcel_image.get_fdata().astype(np.int32)
@@ -172,7 +172,7 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
 
     root= '/data/elisa/RESULTS/Longitudinal_project/Dec2023/'
     masked_compoents = glob.glob(os.path.join( root, "v*.nii.gz")) 
-    temp = nb.load('/data/elisa/TEMPLATE_TRY/SingleSubjectTemplateInterpolated2/template_template0.nii.gz')
+    temp = nb.load(template)
 
 
     for f in masked_compoents: 
@@ -195,7 +195,7 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
 
     #save as jpeg
     root = os.path.join('/data/elisa/RESULTS/Longitudinal_project/Dec2023/')
-    temp = nb.load('/data/elisa/TEMPLATE_TRY/SingleSubjectTemplateInterpolated2/template_template0.nii.gz')
+    temp = nb.load(template)
     thres_compoents = glob.glob(os.path.join( root, "thresholded_masked_ICA_GM_*.nii.gz"))
     for f in thres_compoents: 
         print (f)
