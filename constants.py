@@ -123,5 +123,5 @@ GM_REGIONS = [
     "Vol_prob_Right_AIns_anterior_insula",
     "Vol_prob_Left_AIns_anterior_insula",
     "Vol_prob_Left_LiG_lingual_gyrus",
-    "Vol_prob_Right_LiG_lingual_gyrus",
+    "Vol_prob_Right_LiG_lingual_gyrus"
 ]
