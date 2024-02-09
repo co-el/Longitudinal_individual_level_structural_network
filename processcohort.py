@@ -25,7 +25,6 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
     df= dataFrameOut[GM_REGIONS]  #selecting the GM regions to keep from the atlas
 
 
-    print (df)
     #In the final dataframe I keep just regions of interest and participants ID.
     #I need participants ID here to get back whose those values belongs to
 
@@ -46,22 +45,14 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
     region_numb.head()
 
     col = pd.merge (col, region_numb, on='REGION_Label')
-    print ("shape col", col.shape)
-
-    print (col)
-    print ("shape col", col.shape)
-    type(col)
-
+    
     col_to_keep = col.REGION_Label.tolist ()
     df1.columns = df1.columns.str.replace("Vol_prob_", "")
-    print (col_to_keep)
     col_to_keep.append ('session_label')
     df_ica_subj = df1[df1.columns.intersection(col_to_keep)] #I'll need this later on for the replication stage
     df_ica = df_ica_subj.iloc[:, 1:]
-    print (df_ica.head())  #Remove the ID column from the dataframe to create the final input to be used to run ICA
+    
 
-
-    print((df_ica_subj.shape))
     pd.DataFrame.to_csv(df_ica, os.path.join(output_folder, 'demographic_discovery.csv'))
 
 
@@ -94,10 +85,8 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
     #####components_masked[np.abs(components_masked) < .8] = 
     a = components_masked.T
     a.size
-    print(a.shape)
-
+    
     data= pd.DataFrame(a)
-    type(data)
     data_wregion_names =  pd.concat([col.reset_index(drop=True), data.reset_index(drop=True)], axis=1)
     data_wregion_names #matrix with name of the regions and value in each component 
     data_wregion_names.columns=['region', 'region_number','v1','v2','v3','v4', 'v5', 
@@ -109,7 +98,7 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
     data_wregion_names
 
 
-    #For visualization porposes: 
+    #For visualization purposes: 
     data_wregion_names['v1'] = np.where(data_wregion_names['v1'].between(-1.5,1.5), 0, data_wregion_names['v1'])
     data_wregion_names['v2'] = np.where(data_wregion_names['v2'].between(-1.5,1.5), 0, data_wregion_names['v2'])
     data_wregion_names['v3'] = np.where(data_wregion_names['v3'].between(-1.5,1.5), 0, data_wregion_names['v3'])
@@ -149,9 +138,6 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
     h = h.astype(np.int32).tolist()
     h= set (h)
     h= list(h)
-    print (len(h))
-    print (h)
-
         
     for i in h:
         #print(type(i))
@@ -166,12 +152,10 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
         heatmap = np.zeros_like(parcel_image.get_fdata())
         
         name_output = output_folder + str(column) + '_longitudinal_ica.nii.gz'
-        print (name_output)
         # Unused? subset = data_wregion_names[["region", "region_number", column]]
         #print (subset.head())
         for i, row in data_wregion_names.iterrows(): 
             n_region = int(row['region_number'])
-            print (n_region)
             heatmap[parc_as_int == n_region] = float(row[column])
         heatmap_image= nb.Nifti1Image(heatmap, parcel_image.affine, parcel_image.header)
         nb.save(heatmap_image, name_output)
@@ -182,11 +166,9 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
 
 
     for f in masked_compoents: 
-        print (f)
         component = f
         niftiImage = f.split('/')[-1]
         no_compo = niftiImage.split('_')[0]
-        print (niftiImage)
         img_file = nb.load(f)
         img_array = img_file.get_data() 
         img_array[ ( ( img_array >= -1.5) & (img_array <= 1.5) ) ] = 0   #################  togli il # una volta che ci saranno tutti 
@@ -195,7 +177,6 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
         img = nb.Nifti1Image(img_array, affine)
         final_name = 'thresholded_masked_ICA_GM_' + no_compo + '.nii.gz'
         final= os.path.join (output_folder, final_name)
-        print(final)
         nb.save(img, final)   
 
 
@@ -203,23 +184,18 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
     temp = nb.load(template)
     thres_compoents = glob.glob(os.path.join( output_folder, "thresholded_masked_ICA_GM_*.nii.gz"))
     for f in thres_compoents: 
-        print (f)
         component = f
         niftiImage = f.split('/')[-1]
         
         no_compo = niftiImage.split('_')[-1]
         no_compo = no_compo.split('.')[0]
         num = no_compo.split('v')[1]
-        print (num)
         #print (no_component)
-        print (no_compo)
         name = "Network " + num
-        print(name)
         #mean_img = image.mean_img (scans2)
         a= plot_stat_map(component, temp, dim= -0.5, title= name)
         show()
         name = 'thresholded_masked_ICA_GM_' + no_compo + '.png'
-        print (name)
         a.savefig (os.path.join (output_folder, name))
 
 
@@ -231,14 +207,12 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
     col = pd.DataFrame(col_name) #matrix with col names to be used later
     col.columns = ['REGION_Label']#to be consistent and be able to merge later 
     col['REGION_Label'] = col['REGION_Label'].astype(str).str.replace('Vol_prob_', '') #to match the parcellation file where I don't have them
-    print ("shape col", col.shape)
-
+    
     region_numb['REGION_Label'] = region_numb['REGION_Label'].astype(str).str.replace(' ', '_')
     region_numb.head()
 
     col = pd.merge (col, region_numb, on='REGION_Label')
-    print ("shape col", col.shape)
-
+    
     col_to_keep = col.REGION_Label.tolist ()
 
 
@@ -246,14 +220,12 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
     col_to_keep.append ('session_label')
     df1_validation_subj = df1_validation[df1_validation.columns.intersection(col_to_keep)] 
     df1_validation = df1_validation.iloc[:, 1:]
-    print (df1_validation.head())  #Remove the ID column from the dataframe to create the final input to be used to run ICA
     pd.DataFrame.to_csv(df1_validation_subj, os.path.join(output_folder, 'replication_external_cohort.csv'))
 
 
     list_disc = list(df_ica.columns)
     list_rep = list(df1_validation.columns)
-    print (len(list_disc), len(list_rep))
-
+    
     #Validation method  for each component
     ##Here I am creating pickles, applying and validating the model
 
@@ -269,10 +241,8 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
         #create training and testing 
         X_train, X_test, y_train, y_test = train_test_split (X, y, test_size = 0.3, random_state= 0)
         id_train = pd.DataFrame (X_train.iloc [:, 0:1])#saving id to dataframe
-        print (len(id_train))
         X_train = X_train.iloc[:, 1:] #removing the id column
         id_test = pd.DataFrame (X_test.iloc [:, 0:1])#saving id to dataframe
-        print (len(id_test))
         X_test = X_test.iloc[:, 1:] #removing the id column
         
         #from sklearn.preprocessing.StandardScaler import class
@@ -326,12 +296,8 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
         col_load = str("ica_loading_" + i)
         col_pred = str("predicted_loading_" + i)
         subject = id_train.values.tolist()
-        print(id_train)
-        print(y_train)
-        print(pred_train_lasso)
         save_train = pd.DataFrame(list(zip(subject, y_train, pred_train_lasso)),
                    columns = ['session_label', col_load, col_pred])
-        print(save_train)
         saving_name_train = output_folder + "train_cohort_loading_predicted_" + i + ".csv"
         save_train.to_csv(saving_name_train)
         
@@ -345,11 +311,8 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
         ##print ('list without NaN is long: ', len(cleanedList))
         
         subject_test = id_test.values.tolist()
-        print(id_test)
-        print(pred_test_lasso)
         
         save_test = pd.DataFrame(list(zip(subject_test, y_test, pred_test_lasso)), columns =['session_label', col_load, col_pred])
-        print (save_test)
         saving_name_test = output_folder + "test_cohort_loading_predicted_" + i + ".csv"
         save_test.to_csv(saving_name_test)
         
@@ -361,13 +324,10 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
     
         replication_cohort = (df1_validation)
         predicted_loading_replication_cohort = lasso.predict(replication_cohort)
-        print(len(predicted_loading_replication_cohort))
-        print(predicted_loading_replication_cohort)
         id_replication = df1_validation_subj.iloc[:, 0]
         col_pred_id = "predicted_loading_" + i 
         predicted_loading_replication_cohort_save = pd.DataFrame(list(zip(id_replication, predicted_loading_replication_cohort)),
                    columns =['session_label', col_pred_id])
-        print (predicted_loading_replication_cohort_save)
         save_name_pred = output_folder + "replication_cohort_predicted_loading_" + i + ".csv"
     
         predicted_loading_replication_cohort_save.to_csv(save_name_pred)
