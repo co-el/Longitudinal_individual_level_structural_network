@@ -220,7 +220,7 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
 
     #Lasso 
     
-    validation_df =  validation_df[GM_regions] 
+    validation_df =  validation_df[GM_REGIONS] 
     df1_validation = validation_df.dropna(axis= 0) #dropping NaN values
     col_name = df1_validation.columns.tolist()
     col = pd.DataFrame(col_name) #matrix with col names to be used later
