@@ -34,7 +34,6 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
     col['REGION_Label'] = col['REGION_Label'].astype(str).str.replace('Vol_prob_', '') #to match the parcellation file where I don't have them
 
 
-    region_numb = pd.read_csv('/data/elisa/Parcellated_regions_ica_modified.csv') #TO BE PROVIDED
     region_numb['REGION_Label'] = region_numb['REGION_Label'].astype(str).str.replace(' ', '_')
     region_numb.head()
 
