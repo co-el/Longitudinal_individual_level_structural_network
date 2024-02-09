@@ -71,7 +71,7 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
     df = df.reset_index()
     ica = FastICA(n_components= 20, algorithm= 'parallel', fun= 'logcosh', random_state=0 ) #random_state=42
     components_masked = ica.fit_transform(df_ica.T).T 
-    comp = ica.components_
+    # Unused? comp = ica.components_
     loading = pd.DataFrame(ica.mixing_)
     loading_ = pd.concat([subj_list_.reset_index(drop=True), loading.reset_index(drop=True)], axis=1)
     loading_.columns=['subj_id', 'v1','v2','v3','v4', 'v5', 
@@ -90,7 +90,6 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
     components_masked /= components_masked.std(axis=0)
 
     # Threshold
-    import numpy as np
     components_masked[np.abs(components_masked) < .8] = 0
     #####components_masked[np.abs(components_masked) < .8] = 
     a = components_masked.T
@@ -140,11 +139,11 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
     path_imParc = parcellated_map #TO BE PROVIDED importing parcellated map
     temp = nb.load(template) # TO BE PROVIDED importing template in the same space of the parcellated map
     parcel_image = nb.load(path_imParc)
-    parcel_image_vox = parcel_image.get_fdata().copy()
+    # Unused? parcel_image_vox = parcel_image.get_fdata().copy()
     parc_as_int = parcel_image.get_fdata().astype(np.int32)
     reg_keep = data_wregion_names['region_number'].astype(np.int32).tolist()
     heatmap = np.zeros_like(parcel_image.get_fdata())
-    out = nb.Nifti1Image(heatmap, parcel_image.affine, parcel_image.header)
+    # Unused? out = nb.Nifti1Image(heatmap, parcel_image.affine, parcel_image.header)
 
     h = parc_as_int [parc_as_int > 0]
     h = h.astype(np.int32).tolist()
@@ -161,14 +160,14 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
             parc_as_int[parc_as_int == i] = 0
             
             
-    region_col = data_wregion_names.loc[:, 'region']
+    # Unused? region_col = data_wregion_names.loc[:, 'region']
     #print (region_col)
     for column in data_wregion_names.columns[2:]:
         heatmap = np.zeros_like(parcel_image.get_fdata())
         
         name_output = '/data/elisa/RESULTS/Longitudinal_project/Dec2023/' + str(column) + '_longitudinal_ica.nii.gz'
         print (name_output)
-        subset = data_wregion_names[["region", "region_number", column]]
+        # Unused? subset = data_wregion_names[["region", "region_number", column]]
         #print (subset.head())
         for i, row in data_wregion_names.iterrows(): 
             n_region = int(row['region_number'])
@@ -228,8 +227,8 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
 
     #Lasso 
     
-    validation_df =  validation_df[GM_REGIONS] 
-    df1_validation = validation_df.dropna(axis= 0) #dropping NaN values
+    #validation_df =  df[GM_REGIONS] 
+    df1_validation = df.dropna(axis= 0) #dropping NaN values
     col_name = df1_validation.columns.tolist()
     col = pd.DataFrame(col_name) #matrix with col names to be used later
     col.columns = ['REGION_Label']#to be consistent and be able to merge later 
@@ -250,13 +249,11 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
     df1_validation_subj = df1_validation[df1_validation.columns.intersection(col_to_keep)] 
     df1_validation = df1_validation.iloc[:, 1:]
     print (df1_validation.head())  #Remove the ID column from the dataframe to create the final input to be used to run ICA
-    print (shape(df1_validation))
     pd.DataFrame.to_csv(df1_validation_subj, '/data/elisa/RESULTS/Longitudinal_project/Dec2023/replication_external_cohort.csv')
 
 
     list_disc = list(df_ica.columns)
     list_rep = list(df1_validation.columns)
-    print(shape(df1_validation))
     print (len(list_disc), len(list_rep))
 
     #Validation method  for each component
@@ -346,7 +343,7 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
         ########
     
         ##print ('Original list is long: ', len(y_test))
-        cleanedList = [x for x in y_test if str(x) != "NaN"] #checking for NaN
+        # Unused? cleanedList = [x for x in y_test if str(x) != "NaN"] #checking for NaN
         ##print ('list without NaN is long: ', len(cleanedList))
         
         subject_test = id_test.values.tolist()
