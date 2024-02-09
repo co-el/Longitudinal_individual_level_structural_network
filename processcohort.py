@@ -1,13 +1,21 @@
-#Libraries
-from sklearn.linear_model import Lasso
-from sklearn.model_selection import train_test_split
-import pandas as pd
+import glob
+import os
+import pathlib
+import pickle
+
+import nibabel as nb
+
+from nilearn.plotting import plot_stat_map, show
+
 import numpy as np
+
+import pandas as pd
+
 from sklearn.decomposition import FastICA
+from sklearn.linear_model import Lasso
 from sklearn.metrics import r2_score
 from sklearn.metrics import mean_squared_error
-from math import sqrt
-import pickle
+from sklearn.model_selection import train_test_split
 
 from constants import GM_REGIONS
 
