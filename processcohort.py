@@ -20,7 +20,7 @@ from sklearn.model_selection import train_test_split
 from constants import GM_REGIONS
 
 
-def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, template: pathlib.Path, parcellated_map):
+def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, template: pathlib.Path, parcellated_map, output_folder: pathlib.Path):
     #Subsetting regional volumes to include GM ones
     df= dataFrameOut[GM_REGIONS]  #selecting the GM regions to keep from the atlas
 
@@ -62,7 +62,7 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
 
 
     print((df_ica_subj.shape))
-    pd.DataFrame.to_csv(df_ica, '/data/elisa/RESULTS/Longitudinal_project/Dec2023/demographic_discovery.csv')
+    pd.DataFrame.to_csv(df_ica, os.path.join(output_folder, 'demographic_discovery.csv'))
 
 
 
@@ -76,10 +76,10 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
     loading_ = pd.concat([subj_list_.reset_index(drop=True), loading.reset_index(drop=True)], axis=1)
     loading_.columns=['subj_id', 'v1','v2','v3','v4', 'v5', 
                             'v6', 'v7', 'v8', 'v9', 'v10', 
-                    'v11', 'v12', 'v13', 'v14', 'v15', 'v16', 'v17', 'v88', 'v19', 'v20']
+                    'v11', 'v12', 'v13', 'v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20']
 
 
-    pd.DataFrame.to_csv(loading_, '/data/elisa/RESULTS/Longitudinal_project/Dec2023/loading_ica_discovery.csv')
+    pd.DataFrame.to_csv(loading_, os.path.join(output_folder, 'loading_ica_discovery.csv'))
     print (loading_.shape)
     print (loading_)
 
@@ -101,7 +101,7 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
     data_wregion_names =  pd.concat([col.reset_index(drop=True), data.reset_index(drop=True)], axis=1)
     data_wregion_names #matrix with name of the regions and value in each component 
     data_wregion_names.columns=['region', 'region_number','v1','v2','v3','v4', 'v5', 
-                            'v6', 'v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13', 'v14', 'v15', 'v16', 'v17', 'v88', 
+                            'v6', 'v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13', 'v14', 'v15', 'v16', 'v17', 'v18', 
                             'v19', 'v20']
     data_wregion_names['region'] = data_wregion_names['region'].astype(str).str.replace('Vol_cat_', '')
     data_wregion_names['region'] = data_wregion_names['region'].astype(str).str.replace('Vol_prob_', '')
@@ -131,7 +131,7 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
     data_wregion_names['v19'] = np.where(data_wregion_names['v19'].between(-1.5,1.5), 0, data_wregion_names['v19'])
     data_wregion_names['v20'] = np.where(data_wregion_names['v20'].between(-1.5,1.5), 0, data_wregion_names['v20'])
 
-    pd.DataFrame.to_csv(data_wregion_names, '/data/elisa/RESULTS/Longitudinal_project/Dec2023/regions_in_each_component_discovery.csv') #file to get which regions where most involed in each network
+    pd.DataFrame.to_csv(data_wregion_names, os.path.join(output_folder, 'regions_in_each_component_discovery.csv')) #file to get which regions where most involed in each network
 
 
     #Visualisation 
@@ -165,7 +165,7 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
     for column in data_wregion_names.columns[2:]:
         heatmap = np.zeros_like(parcel_image.get_fdata())
         
-        name_output = '/data/elisa/RESULTS/Longitudinal_project/Dec2023/' + str(column) + '_longitudinal_ica.nii.gz'
+        name_output = output_folder + str(column) + '_longitudinal_ica.nii.gz'
         print (name_output)
         # Unused? subset = data_wregion_names[["region", "region_number", column]]
         #print (subset.head())
@@ -177,8 +177,7 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
         nb.save(heatmap_image, name_output)
 
 
-    root= '/data/elisa/RESULTS/Longitudinal_project/Dec2023/'
-    masked_compoents = glob.glob(os.path.join( root, "v*.nii.gz")) 
+    masked_compoents = glob.glob(os.path.join( output_folder, "v*.nii.gz")) 
     temp = nb.load(template)
 
 
@@ -195,15 +194,14 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
         affine = img_file.affine
         img = nb.Nifti1Image(img_array, affine)
         final_name = 'thresholded_masked_ICA_GM_' + no_compo + '.nii.gz'
-        final= os.path.join (root, final_name)
+        final= os.path.join (output_folder, final_name)
         print(final)
         nb.save(img, final)   
 
 
     #save as jpeg
-    root = os.path.join('/data/elisa/RESULTS/Longitudinal_project/Dec2023/')
     temp = nb.load(template)
-    thres_compoents = glob.glob(os.path.join( root, "thresholded_masked_ICA_GM_*.nii.gz"))
+    thres_compoents = glob.glob(os.path.join( output_folder, "thresholded_masked_ICA_GM_*.nii.gz"))
     for f in thres_compoents: 
         print (f)
         component = f
@@ -222,7 +220,7 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
         show()
         name = 'thresholded_masked_ICA_GM_' + no_compo + '.png'
         print (name)
-        a.savefig (os.path.join (root, name))
+        a.savefig (os.path.join (output_folder, name))
 
 
     #Lasso 
@@ -249,7 +247,7 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
     df1_validation_subj = df1_validation[df1_validation.columns.intersection(col_to_keep)] 
     df1_validation = df1_validation.iloc[:, 1:]
     print (df1_validation.head())  #Remove the ID column from the dataframe to create the final input to be used to run ICA
-    pd.DataFrame.to_csv(df1_validation_subj, '/data/elisa/RESULTS/Longitudinal_project/Dec2023/replication_external_cohort.csv')
+    pd.DataFrame.to_csv(df1_validation_subj, os.path.join(output_folder, 'replication_external_cohort.csv'))
 
 
     list_disc = list(df_ica.columns)
@@ -260,7 +258,7 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
     ##Here I am creating pickles, applying and validating the model
 
     #Defining list of ica components to go through
-    list_of_components = ['v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13', 'v14','v15', 'v16', 'v17', 'v88', 'v19', 'v20'] #CAPISCI XK V18 non andato
+    list_of_components = ['v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13', 'v14','v15', 'v16', 'v17', 'v18', 'v19', 'v20'] #CAPISCI XK V18 non andato
     
     X= df_ica_subj #discovery cohort - reports subj id, vol measure for each region
     
@@ -283,7 +281,7 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
         #Fit model 
     
         lasso.fit(X_train, y_train)
-        model_name = "/data/elisa/RESULTS/Longitudinal_project/Dec2023/model_" + i + ".pkl" 
+        model_name = output_folder + "model_" + i + ".pkl" 
         print('The model is saved as: ', model_name)
         pickle.dump(lasso, open(model_name, 'wb'))
         
@@ -334,7 +332,7 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
         save_train = pd.DataFrame(list(zip(subject, y_train, pred_train_lasso)),
                    columns = ['session_label', col_load, col_pred])
         print(save_train)
-        saving_name_train = "/data/elisa/RESULTS/Longitudinal_project/Dec2023/train_cohort_loading_predicted_" + i + ".csv"
+        saving_name_train = output_folder + "train_cohort_loading_predicted_" + i + ".csv"
         save_train.to_csv(saving_name_train)
         
     
@@ -352,7 +350,7 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
         
         save_test = pd.DataFrame(list(zip(subject_test, y_test, pred_test_lasso)), columns =['session_label', col_load, col_pred])
         print (save_test)
-        saving_name_test = "/data/elisa/RESULTS/Longitudinal_project/Dec2023/test_cohort_loading_predicted_" + i + ".csv"
+        saving_name_test = output_folder + "test_cohort_loading_predicted_" + i + ".csv"
         save_test.to_csv(saving_name_test)
         
         #############
@@ -370,7 +368,7 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
         predicted_loading_replication_cohort_save = pd.DataFrame(list(zip(id_replication, predicted_loading_replication_cohort)),
                    columns =['session_label', col_pred_id])
         print (predicted_loading_replication_cohort_save)
-        save_name_pred = "/data/elisa/RESULTS/Longitudinal_project/Dec2023/replication_cohort_predicted_loading_" + i + ".csv"
+        save_name_pred = output_folder + "replication_cohort_predicted_loading_" + i + ".csv"
     
         predicted_loading_replication_cohort_save.to_csv(save_name_pred)
     
