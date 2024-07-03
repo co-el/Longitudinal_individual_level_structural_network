@@ -1,6 +1,6 @@
 #Longitudinal_networks
 #This code is meant for people who have a large database and want to apply the same technique to get longitudinal networks
-# We will specify that if they want to use other regions/atlas, they need to change the selected regions below and the parcellated image for the back projection. 
+# For this study, we used GIF but if in your study you prefer to use Freesurfer or any other atlas then please change the selected regions below and the parcellated image for the back projection. 
 
 #Importing libraries
 
@@ -36,18 +36,10 @@ process_cohort(train_df)
     
     
     
-    
-    
-#Define external cohort - previous variables have been overwritten from here on
-df = pd.read_csv('/data/elisa/SCRIPT/2019-07-23_02-38-42_df_completed.csv') #TO BE PROVIDED. reloading the same cvs that I loaded for the traiing cohort
-dataFrame_opera1 = df[df['session_label'].str.contains('OPERA1')] #keep just participants from OPERA1
-dataFrame_opera2 = df[df['session_label'].str.contains('OPERA2')] #keep just participants from OPERA2
-dataFrame_oratorio = df[df['session_label'].str.contains('ORATORIO')] #keep just participants from ORATORIO - this approach worked for my study because I had to subset based on positive and negative trials. For other cohorts, as suggested at the beginning, could be best to split the 70% of the cohort to training and the remaining to the external
 
-dataFrameOut = pd.concat ([dataFrame_opera2, dataFrame_opera1])
-dataFrameOut = pd.concat ([dataFrameOut, dataFrame_oratorio])
-
-dataFrameOut = dataFrameOut.drop_duplicates(subset= "session_label")
+#Define external cohort 
+df = pd.read_csv('/data/elisa/SCRIPT/2019-07-23_02-38-42_df_completed.csv') #TO BE PROVIDED. reloading the same cvs that I loaded for the training cohort
+dataFrameOut = df.drop_duplicates(subset= "session_label") #session_label correspond to participants' ID and session (e.g. sub-1001_ses01)
 
 
 #As for the training cohort, subsetting the GM regions
@@ -187,7 +179,7 @@ type(col)
 print (col)
 
 
-region_numb = pd.read_csv('/data/elisa/Parcellated_regions_ica_modified.csv')
+region_numb = pd.read_csv('/data/elisa/Parcellated_regions_ica_modified.csv') #TO BE PROVIDED
 region_numb['REGION_Label'] = region_numb['REGION_Label'].astype(str).str.replace(' ', '_')
 region_numb.head()
 
@@ -208,7 +200,7 @@ print (shape(df1_test))
 
 
 
-pd.DataFrame.to_csv(df1_test_subj, '/data/elisa/RESULTS/Longitudinal_project/Dec2023/replication_external_cohort.csv')
+pd.DataFrame.to_csv(df1_test_subj, '/data/replication_external_cohort.csv')
 
 
 list_disc = list(df_ica.columns)
@@ -220,7 +212,7 @@ print (len(list_disc), len(list_rep))
 
 
 #Validation method  for each component
-#Here I am creating pickles, applying and validating the model
+#Creating pickles, applying and validating the model
 
 from sklearn.linear_model import Lasso
 from sklearn.model_selection import train_test_split
@@ -231,8 +223,8 @@ from sklearn.metrics import mean_squared_error
 from math import sqrt
 import pickle
 
-#Defining list of ica components to go through
-list_of_components = ['v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13', 'v14','v15', 'v16', 'v17', 'v88', 'v19', 'v20'] #CAPISCI XK V18 non andato
+#Defining list of ICA components to go through
+list_of_components = ['v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13', 'v14','v15', 'v16', 'v17', 'v18', 'v19', 'v20'] 
 
 X= df_ica_subj #discovery cohort - reports subj id, vol measure for each region
 
@@ -260,7 +252,7 @@ for i in list_of_components:
     #Fit model 
 
     lasso.fit(X_train, y_train)
-    model_name = "/data/elisa/RESULTS/Longitudinal_project/Dec2023/model_" + i + ".pkl" 
+    model_name = "/data/model_" + i + ".pkl" 
     print('The model is saved as: ', model_name)
     pickle.dump(lasso, open(model_name, 'wb'))
     
@@ -294,8 +286,6 @@ for i in list_of_components:
     
     #saving loadings and predicted loading for stats analysis ICC
 
-
-
     ########
     ######## Saving training data 
     ########
@@ -313,7 +303,7 @@ for i in list_of_components:
     save_train = pd.DataFrame(list(zip(subject, y_train, pred_train_lasso)),
                columns = ['session_label', col_load, col_pred])
     print(save_train)
-    saving_name_train = "/data/elisa/RESULTS/Longitudinal_project/Dec2023/train_cohort_loading_predicted_" + i + ".csv"
+    saving_name_train = "/data/train_cohort_loading_predicted_" + i + ".csv"
     save_train.to_csv(saving_name_train)
     
     
@@ -333,7 +323,7 @@ for i in list_of_components:
     
     save_test = pd.DataFrame(list(zip(subject_test, y_test, pred_test_lasso)), columns =['session_label', col_load, col_pred])
     print (save_test)
-    saving_name_test = "/data/elisa/RESULTS/Longitudinal_project/Dec2023/test_cohort_loading_predicted_" + i + ".csv"
+    saving_name_test = "/data/test_cohort_loading_predicted_" + i + ".csv"
     save_test.to_csv(saving_name_test)
     
     #############
@@ -353,7 +343,7 @@ for i in list_of_components:
     predicted_loading_replication_cohort_save = pd.DataFrame(list(zip(id_replication, predicted_loading_replication_cohort)),
                columns =['session_label', col_pred_id])
     print (predicted_loading_replication_cohort_save)
-    save_name_pred = "/data/elisa/RESULTS/Longitudinal_project/Dec2023/replication_cohort_predicted_loading_" + i + ".csv"
+    save_name_pred = "/data/replication_cohort_predicted_loading_" + i + ".csv"
 
     predicted_loading_replication_cohort_save.to_csv(save_name_pred)
 
