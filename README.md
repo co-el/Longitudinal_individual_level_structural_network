@@ -13,13 +13,13 @@ The input for the Lasso model includes the network values identified by ICA and 
 
 - A CSV file with a column containing the subject ID ('session_label') and the remaining columns containing regional GM volumes. If longitudinal data are used, each timepoint of each participant should occupy one row in the CSV and the timepoint information should be included in the subject ID. 
 
-- The code includes a manual division of the cohort into training and validation sets. **COMMENT FOR JON**: here I had manually selected the trails to be included in the training cohort (negative trials) and those for the validation cohort (positive trials) because I wanted to investigate the treatment effect. We might want to implement a 70-30 random split in the code before sharing it. 
+- The code includes a manual division of the cohort into training and validation sets. 
 
-- For this study, we segmented and parcelalted brain images using GIF. If using a different segmentation atlas (e.g., Freesurfer), modify the names of regions and the regions to include in the "Subsetting regional volumes to include GM ones" section.
+- For this study, we segmented and parcellated brain images using GIF. If using a different segmentation atlas (e.g., Freesurfer), modify the names of regions and the regions to include in the "Subsetting regional volumes to include GM ones" section.
 
 - region_numb: A CSV file containing the names of regions and their corresponding numbers in the parcellation atlas.
 
-- temp: T1 template space (MNI or subject-specific) used for backprojection and visualization.
+- temp: T1 template space (MNI or subject-specific) used for backprojection and visualisation.
 
 - path_imParc: Parcellated map in the same space as the provided template.
 
