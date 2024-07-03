@@ -120,7 +120,7 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
     data_wregion_names['v19'] = np.where(data_wregion_names['v19'].between(-1.5,1.5), 0, data_wregion_names['v19'])
     data_wregion_names['v20'] = np.where(data_wregion_names['v20'].between(-1.5,1.5), 0, data_wregion_names['v20'])
 
-    pd.DataFrame.to_csv(data_wregion_names, os.path.join(output_folder, 'regions_in_each_component_discovery.csv')) #file to get which regions where most involed in each network
+    pd.DataFrame.to_csv(data_wregion_names, os.path.join(output_folder, 'regions_in_each_component_discovery.csv')) #file to get which regions were most involved in each network
 
 
     #Visualisation 
@@ -128,12 +128,10 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
     path_imParc = parcellated_map #TO BE PROVIDED importing parcellated map
     temp = nb.load(template) # TO BE PROVIDED importing template in the same space of the parcellated map
     parcel_image = nb.load(path_imParc)
-    # Unused? parcel_image_vox = parcel_image.get_fdata().copy()
     parc_as_int = parcel_image.get_fdata().astype(np.int32)
     reg_keep = data_wregion_names['region_number'].astype(np.int32).tolist()
     heatmap = np.zeros_like(parcel_image.get_fdata())
-    # Unused? out = nb.Nifti1Image(heatmap, parcel_image.affine, parcel_image.header)
-
+    
     h = parc_as_int [parc_as_int > 0]
     h = h.astype(np.int32).tolist()
     h= set (h)
@@ -146,14 +144,14 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
             parc_as_int[parc_as_int == i] = 0
             
             
-    # Unused? region_col = data_wregion_names.loc[:, 'region']
+    region_col = data_wregion_names.loc[:, 'region']
     #print (region_col)
     for column in data_wregion_names.columns[2:]:
         heatmap = np.zeros_like(parcel_image.get_fdata())
         
         name_output = output_folder + str(column) + '_longitudinal_ica.nii.gz'
-        # Unused? subset = data_wregion_names[["region", "region_number", column]]
-        #print (subset.head())
+        subset = data_wregion_names[["region", "region_number", column]]
+
         for i, row in data_wregion_names.iterrows(): 
             n_region = int(row['region_number'])
             heatmap[parc_as_int == n_region] = float(row[column])
@@ -171,7 +169,7 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
         no_compo = niftiImage.split('_')[0]
         img_file = nb.load(f)
         img_array = img_file.get_data() 
-        img_array[ ( ( img_array >= -1.5) & (img_array <= 1.5) ) ] = 0   #################  togli il # una volta che ci saranno tutti 
+        img_array[ ( ( img_array >= -1.5) & (img_array <= 1.5) ) ] = 0   
         np.any(img_array <= 0.8)
         affine = img_file.affine
         img = nb.Nifti1Image(img_array, affine)
@@ -230,7 +228,7 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
     ##Here I am creating pickles, applying and validating the model
 
     #Defining list of ica components to go through
-    list_of_components = ['v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13', 'v14','v15', 'v16', 'v17', 'v18', 'v19', 'v20'] #CAPISCI XK V18 non andato
+    list_of_components = ['v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13', 'v14','v15', 'v16', 'v17', 'v18', 'v19', 'v20'] 
     
     X= df_ica_subj #discovery cohort - reports subj id, vol measure for each region
     
@@ -306,9 +304,6 @@ def process_cohort(dataFrameOut: pd.DataFrame, region_numb: pd.DataFrame, templa
         ######## Saving testing data 
         ########
     
-        ##print ('Original list is long: ', len(y_test))
-        # Unused? cleanedList = [x for x in y_test if str(x) != "NaN"] #checking for NaN
-        ##print ('list without NaN is long: ', len(cleanedList))
         
         subject_test = id_test.values.tolist()
         
